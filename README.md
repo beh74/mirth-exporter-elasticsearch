@@ -1,5 +1,6 @@
 # mirth-exporter-elasticsearch
 A Nextgen healthcare Mirth exporter - Exporting Mirth statistics on JVM, CPU and disk utilization
+Mirth version should be >= 3.9
 
 ## How to use it
 
