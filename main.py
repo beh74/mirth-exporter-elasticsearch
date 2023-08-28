@@ -1,3 +1,4 @@
+"""Module to query Mirth Connect statistics and pubishing results to elasticsearch"""
 import os
 from datetime import datetime, timezone
 import json
@@ -5,7 +6,14 @@ import logging
 import requests
 import xmltodict
 
+
 def postprocessor(path, key, value):
+    """Function to convert in int or float from json value
+    Keyword arguments:
+    path : json path
+    key: string key
+    value : int float or string value of the key
+    """
     try:
         return key , int(value)
     except (ValueError, TypeError):
@@ -16,6 +24,10 @@ def postprocessor(path, key, value):
     return key, value
 
 def getdata(apiurl):
+    """get api data from url. Returns a python dict
+    Keyword arguments:
+    apiurl : the Mirth Connect API URL
+    """
     logging.debug("I query Mirth Instance ...")
     headers = {"X-Requested-With": "OpenAPI"}
     response=requests.get(os.environ['MIRTH_URL']+apiurl,
@@ -24,7 +36,7 @@ def getdata(apiurl):
                         os.environ['MIRTH_USER_PWD']),
                         headers=headers,
                         verify=False)
-    if (response.ok):
+    if response.ok:
         data_dict = xmltodict.parse(response.content,
                                     dict_constructor=dict,
                                     postprocessor=postprocessor)
@@ -34,13 +46,18 @@ def getdata(apiurl):
     return None
 
 def postelk(data):
+    """Post a json data to elastic index Returns true of false
+    Keyword arguments:
+    data : the json payload
+    """
     header = {"Content-Type": "application/json"}  
     response=requests.post(os.environ['ELK_URL'], data=data, headers=header,timeout=5)
-    if (response.ok):
+    if response.ok:
         logging.info("Mirth statistics published to elasticsearch")
         return True
 
-    logging.error("Error while posting data to elasticsearch - Status Code = %s", str(response.status_code))
+    logging.error("Error while posting data to elasticsearch - Status Code = %s",
+                  str(response.status_code))
     return False
 
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
