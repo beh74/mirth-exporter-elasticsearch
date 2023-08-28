@@ -50,7 +50,7 @@ def postelk(data):
     Keyword arguments:
     data : the json payload
     """
-    header = {"Content-Type": "application/json"}  
+    header = {"Content-Type": "application/json"}
     response=requests.post(os.environ['ELK_URL'], data=data, headers=header,timeout=5)
     if response.ok:
         logging.info("Mirth statistics published to elasticsearch")
